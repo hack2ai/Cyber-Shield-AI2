@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --background: 240 10% 2%;
+  --foreground: 142 100% 50%;
+  --card: 240 10% 4%;
+  --card-foreground: 142 100% 50%;
+  --popover: 240 10% 2%;
+  --popover-foreground: 142 100% 50%;
+  --primary: 142 100% 50%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 142 100% 20%;
+  --secondary-foreground: 142 100% 50%;
+  --muted: 240 3.7% 10%;
+  --muted-foreground: 142 100% 30%;
+  --accent: 142 100% 20%;
+  --accent-foreground: 142 100% 50%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 142 100% 10%;
+  --input: 142 100% 10%;
+  --ring: 142 100% 50%;
+}
+
+html, body {
+  background-color: #050505;
+  color: #39FF14;
+  overflow-x: hidden;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-black/60 border border-[#39FF14]/10 backdrop-blur-md rounded-lg p-4 transition-all duration-300;
+  }
+  
+  .neon-border {
+    @apply border-[#39FF14]/30 shadow-[0_0_15px_rgba(57,255,20,0.1)];
+  }
+
+  .status-badge {
+    @apply flex items-center gap-2 px-3 py-1 rounded-none text-[10px] font-bold border uppercase tracking-widest bg-black/50;
+  }
+  
+  .data-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3;
+  }
+
+  .interactive-hover {
+    @apply hover:border-white/20 hover:bg-white/[0.02] active:scale-[0.98];
+  }
+}

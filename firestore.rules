@@ -1,0 +1,101 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Users ---
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'createdAt', 'displayName']) &&
+             data.keys().size() == 5 &&
+             data.uid == request.auth.uid &&
+             data.email is string && data.email.size() <= 256 &&
+             data.displayName is string && data.displayName.size() <= 128 &&
+             data.role in ['user', 'admin'] &&
+             data.createdAt == request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && 
+                      incoming().role == existing().role && // Prevent self-promotion
+                      incoming().createdAt == existing().createdAt &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email']);
+    }
+
+    // --- Scan Reports ---
+    function isValidScanReport(data) {
+      return data.keys().hasAll(['userId', 'target', 'classification', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.target is string && data.target.size() <= 2048 &&
+             data.classification is string &&
+             data.createdAt == request.time &&
+             (!('threatScore' in data) || (data.threatScore >= 0 && data.threatScore <= 100));
+    }
+
+    match /scanReports/{reportId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidScanReport(incoming()) && isValidId(reportId);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+      // No updates allowed to history for integrity
+    }
+
+    // --- Subscriptions ---
+    function isValidSubscription(data) {
+      return data.keys().hasAll(['userId', 'keyword', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.keyword is string && data.keyword.size() <= 100 &&
+             data.createdAt == request.time;
+    }
+
+    match /subscriptions/{subId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidSubscription(incoming()) && isValidId(subId);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    // --- Alerts ---
+    function isValidAlert(data) {
+      return data.keys().hasAll(['userId', 'keyword', 'message', 'threatScore', 'timestamp']) &&
+             data.keys().size() == 5 &&
+             data.userId == request.auth.uid &&
+             data.keyword is string && data.keyword.size() <= 256 &&
+             data.message is string && data.message.size() <= 1024 &&
+             data.threatScore is number && data.threatScore >= 0 && data.threatScore <= 100 &&
+             data.timestamp == request.time;
+    }
+
+    match /alerts/{alertId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidAlert(incoming()) && isValidId(alertId);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}
