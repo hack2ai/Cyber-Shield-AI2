@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { 
   getFirestore, 
   collection, 
@@ -57,10 +57,40 @@ export const signInWithGoogle = async () => {
     }
     return result;
   } catch (error: any) {
-    if (error.code === 'auth/popup-closed-by-user') {
+    const errCode = error?.code || '';
+    const errMsg = error?.message || '';
+
+    if (errCode === 'auth/popup-closed-by-user') {
       console.warn('Sign-in popup closed by user before completion.');
       return null;
     }
+
+    if (errCode === 'auth/unauthorized-domain') {
+      const activeDomain = window.location.hostname;
+      const alertMsg = `🔐 Firebase Auth Domain Restriction:\n\n` +
+        `This domain '${activeDomain}' is not authorized for authentication in your Firebase project.\n\n` +
+        `To fix this:\n` +
+        `1. Go to Firebase Console -> Authentication -> Settings tab.\n` +
+        `2. Scroll down to 'Authorized domains' and click 'Add domain'.\n` +
+        `3. Add '${activeDomain}' and save.\n\n` +
+        `Once added, AUTH_INIT will work instantly!`;
+      alert(alertMsg);
+      console.error(alertMsg);
+      return null;
+    }
+
+    // If popup is blocked or blocked by browser policies, attempt redirect instead
+    if (errCode === 'auth/popup-blocked' || errCode === 'auth/cancelled-popup-request' || errMsg.includes('popup')) {
+      console.warn('Popup blocked/failed. Attempting sign-in via redirect...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      } catch (redirectErr: any) {
+        console.error('Redirect sign-in failed as well:', redirectErr);
+        throw redirectErr;
+      }
+    }
+
     console.error('Firebase Auth Error:', error);
     throw error;
   }
