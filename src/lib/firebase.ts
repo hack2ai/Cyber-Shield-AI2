@@ -74,7 +74,7 @@ export const signInWithGoogle = async () => {
         `2. Scroll down to 'Authorized domains' and click 'Add domain'.\n` +
         `3. Add '${activeDomain}' and save.\n\n` +
         `Once added, AUTH_INIT will work instantly!`;
-      alert(alertMsg);
+      console.warn(alertMsg);
       console.error(alertMsg);
       return null;
     }

@@ -86,6 +86,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async () => {
+    const hostname = window.location.hostname;
+    const isAuthorized = [
+      'localhost',
+      '127.0.0.1',
+      'gen-lang-client-0121845763.firebaseapp.com',
+      'gen-lang-client-0121845763.web.app'
+    ].includes(hostname) || hostname.endsWith('.gitpod.io') || hostname.endsWith('.github.dev');
+
+    if (!isAuthorized) {
+      console.log("Detecting unauthorized domain. Activating Guest fallback mode instantly.");
+      activateGuestSession();
+      return;
+    }
+
     try {
       const result = await signInWithGoogle();
       if (!result) {
