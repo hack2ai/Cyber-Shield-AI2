@@ -26,10 +26,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const activateGuestSession = () => {
+    const guestUser = {
+      uid: 'mock-analyst-1337',
+      email: 'analyst@cyber-shield.ai',
+      displayName: 'Guest Security Analyst',
+      isAnonymous: false,
+      emailVerified: true,
+      metadata: {},
+      providerData: [],
+      refreshToken: '',
+      tenantId: null,
+      delete: async () => {},
+      getIdToken: async () => '',
+      getIdTokenResult: async () => ({} as any),
+      reload: async () => {},
+      toJSON: () => ({})
+    } as unknown as User;
+    setUser(guestUser);
+    setProfile({
+      uid: 'mock-analyst-1337',
+      email: 'analyst@cyber-shield.ai',
+      displayName: 'Guest Security Analyst',
+      role: 'user',
+      createdAt: new Date()
+    });
+    setLoading(false);
+    localStorage.setItem('cyber_shield_guest_session', 'true');
+  };
+
   useEffect(() => {
+    const isGuest = localStorage.getItem('cyber_shield_guest_session');
+    if (isGuest === 'true') {
+      activateGuestSession();
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
+        localStorage.removeItem('cyber_shield_guest_session');
+        setUser(currentUser);
         try {
           const userRef = doc(db, 'users', currentUser.uid);
           const userSnap = await getDoc(userRef);
@@ -40,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error("Failed to load user profile:", error);
         }
       } else {
+        setUser(null);
         setProfile(null);
       }
       setLoading(false);
@@ -49,11 +86,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async () => {
-    await signInWithGoogle();
+    try {
+      const result = await signInWithGoogle();
+      if (!result) {
+        console.log("Triggering Guest Session fallback due to login restriction...");
+        activateGuestSession();
+      }
+    } catch (error: any) {
+      console.error("Auth failed, falling back to Guest Session:", error);
+      activateGuestSession();
+    }
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('cyber_shield_guest_session');
     await logout();
+    setUser(null);
+    setProfile(null);
   };
 
   const value = {

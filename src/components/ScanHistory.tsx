@@ -34,6 +34,72 @@ export function ScanHistory({ onSelect }: { onSelect: (report: any) => void }) {
   useEffect(() => {
     if (!user) return;
 
+    if (user.uid === 'mock-analyst-1337') {
+      const loadMockReports = () => {
+        const localReports = localStorage.getItem('cyber_shield_mock_scan_reports');
+        if (localReports) {
+          const parsed = JSON.parse(localReports);
+          const mapped = parsed.map((r: any) => ({
+            ...r,
+            createdAt: { toDate: () => new Date(r.createdAt) }
+          }));
+          setReports(mapped);
+        } else {
+          const defaultReports = [
+            {
+              id: 'rep-1',
+              target: 'http://paypal-verification-secure.com',
+              classification: 'Phishing',
+              threatScore: 84,
+              userId: 'mock-analyst-1337',
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+              id: 'rep-2',
+              target: '8.8.8.8',
+              classification: 'Safe',
+              threatScore: 0,
+              userId: 'mock-analyst-1337',
+              createdAt: new Date(Date.now() - 7200000).toISOString()
+            },
+            {
+              id: 'rep-3',
+              target: 'http://voidhex-botnet-c2.ru',
+              classification: 'Malicious',
+              threatScore: 97,
+              userId: 'mock-analyst-1337',
+              createdAt: new Date(Date.now() - 14400000).toISOString()
+            }
+          ];
+          localStorage.setItem('cyber_shield_mock_scan_reports', JSON.stringify(defaultReports));
+          setReports(defaultReports.map(r => ({
+            ...r,
+            createdAt: { toDate: () => new Date(r.createdAt) }
+          })));
+        }
+        setLoading(false);
+      };
+
+      loadMockReports();
+
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'cyber_shield_mock_scan_reports') {
+          loadMockReports();
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+
+      const handleCustomReport = () => {
+        loadMockReports();
+      };
+      window.addEventListener('cyber_shield_new_report', handleCustomReport);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('cyber_shield_new_report', handleCustomReport);
+      };
+    }
+
     const reportsRef = collection(db, 'scanReports');
     const q = query(
       reportsRef,
@@ -58,6 +124,20 @@ export function ScanHistory({ onSelect }: { onSelect: (report: any) => void }) {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    if (user && user.uid === 'mock-analyst-1337') {
+      const localReports = localStorage.getItem('cyber_shield_mock_scan_reports');
+      const parsed = localReports ? JSON.parse(localReports) : [];
+      const updated = parsed.filter((r: any) => r.id !== id);
+      localStorage.setItem('cyber_shield_mock_scan_reports', JSON.stringify(updated));
+      
+      const mapped = updated.map((r: any) => ({
+        ...r,
+        createdAt: { toDate: () => new Date(r.createdAt) }
+      }));
+      setReports(mapped);
+      return;
+    }
+
     try {
       await deleteDoc(doc(db, 'scanReports', id));
     } catch (err) {

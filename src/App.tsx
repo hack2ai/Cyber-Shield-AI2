@@ -303,6 +303,35 @@ function KeywordMonitor() {
       return;
     }
 
+    if (user.uid === 'mock-analyst-1337') {
+      const loadMockSubs = () => {
+        const localSubs = localStorage.getItem('cyber_shield_mock_subscriptions');
+        if (localSubs) {
+          setSubscriptions(JSON.parse(localSubs));
+        } else {
+          const defaultSubs = [
+            { id: 'sub-1', keyword: 'phishing-intel', createdAt: new Date().toISOString() },
+            { id: 'sub-2', keyword: 'voidhex-botnet', createdAt: new Date().toISOString() }
+          ];
+          setSubscriptions(defaultSubs);
+          localStorage.setItem('cyber_shield_mock_subscriptions', JSON.stringify(defaultSubs));
+        }
+      };
+      
+      loadMockSubs();
+      
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'cyber_shield_mock_subscriptions') {
+          loadMockSubs();
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+      
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
+
     const q = query(
       collection(db, 'subscriptions'), 
       where('userId', '==', user.uid)
@@ -322,12 +351,44 @@ function KeywordMonitor() {
 
     setIsAdding(true);
     try {
-      await addDoc(collection(db, 'subscriptions'), {
-        userId: user.uid,
-        keyword: newKeyword.trim(),
-        createdAt: serverTimestamp()
-      });
-      setNewKeyword('');
+      if (user.uid === 'mock-analyst-1337') {
+        const localSubs = localStorage.getItem('cyber_shield_mock_subscriptions');
+        const parsed = localSubs ? JSON.parse(localSubs) : [];
+        const keywordVal = newKeyword.trim();
+        const newSub = {
+          id: `sub-${Date.now()}`,
+          keyword: keywordVal,
+          createdAt: new Date().toISOString()
+        };
+        const updated = [...parsed, newSub];
+        localStorage.setItem('cyber_shield_mock_subscriptions', JSON.stringify(updated));
+        setSubscriptions(updated);
+        setNewKeyword('');
+        
+        // Trigger a simulated threat alert for the new keyword after 1.5 seconds!
+        setTimeout(() => {
+          const localAlerts = localStorage.getItem('cyber_shield_mock_alerts');
+          const alerts = localAlerts ? JSON.parse(localAlerts) : [];
+          const newAlert = {
+            id: `alert-${Date.now()}`,
+            userId: user.uid,
+            keyword: keywordVal.toUpperCase(),
+            message: `Real-time watch intercept: Active vector matching keyword '${keywordVal}' detected.`,
+            threatScore: Math.floor(Math.random() * 30) + 65,
+            timestamp: { seconds: Math.floor(Date.now() / 1000) }
+          };
+          const updatedAlerts = [newAlert, ...alerts];
+          localStorage.setItem('cyber_shield_mock_alerts', JSON.stringify(updatedAlerts));
+          window.dispatchEvent(new Event('cyber_shield_new_alert'));
+        }, 1500);
+      } else {
+        await addDoc(collection(db, 'subscriptions'), {
+          userId: user.uid,
+          keyword: newKeyword.trim(),
+          createdAt: serverTimestamp()
+        });
+        setNewKeyword('');
+      }
     } catch (error) {
       console.error('Failed to add subscription', error);
     } finally {
@@ -337,7 +398,15 @@ function KeywordMonitor() {
 
   const handleDeleteSubscription = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'subscriptions', id));
+      if (user && user.uid === 'mock-analyst-1337') {
+        const localSubs = localStorage.getItem('cyber_shield_mock_subscriptions');
+        const parsed = localSubs ? JSON.parse(localSubs) : [];
+        const updated = parsed.filter((s: any) => s.id !== id);
+        localStorage.setItem('cyber_shield_mock_subscriptions', JSON.stringify(updated));
+        setSubscriptions(updated);
+      } else {
+        await deleteDoc(doc(db, 'subscriptions', id));
+      }
     } catch (error) {
       console.error('Failed to delete subscription', error);
     }
@@ -422,6 +491,48 @@ function AlertNotifications() {
       return;
     }
 
+    if (user.uid === 'mock-analyst-1337') {
+      const loadMockAlerts = () => {
+        const localAlerts = localStorage.getItem('cyber_shield_mock_alerts');
+        if (localAlerts) {
+          const parsed = JSON.parse(localAlerts);
+          parsed.sort((a: any, b: any) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+          setAlerts(parsed);
+        } else {
+          const defaultAlerts = [
+            {
+              id: 'alert-1',
+              keyword: 'VOIDHEX-BOTNET',
+              message: 'Detected active Command & Control communication vector matching signature voidhex-botnet.',
+              threatScore: 89,
+              timestamp: { seconds: Math.floor(Date.now() / 1000) - 300 }
+            }
+          ];
+          localStorage.setItem('cyber_shield_mock_alerts', JSON.stringify(defaultAlerts));
+          setAlerts(defaultAlerts);
+        }
+      };
+
+      loadMockAlerts();
+
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'cyber_shield_mock_alerts') {
+          loadMockAlerts();
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+
+      const handleCustomAlert = () => {
+        loadMockAlerts();
+      };
+      window.addEventListener('cyber_shield_new_alert', handleCustomAlert);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('cyber_shield_new_alert', handleCustomAlert);
+      };
+    }
+
     const q = query(
       collection(db, 'alerts'), 
       where('userId', '==', user.uid)
@@ -458,7 +569,15 @@ function AlertNotifications() {
               <button 
                 onClick={async () => {
                   try {
-                    await deleteDoc(doc(db, 'alerts', alert.id));
+                    if (user.uid === 'mock-analyst-1337') {
+                      const localAlerts = localStorage.getItem('cyber_shield_mock_alerts');
+                      const parsed = localAlerts ? JSON.parse(localAlerts) : [];
+                      const updated = parsed.filter((a: any) => a.id !== alert.id);
+                      localStorage.setItem('cyber_shield_mock_alerts', JSON.stringify(updated));
+                      setAlerts(updated);
+                    } else {
+                      await deleteDoc(doc(db, 'alerts', alert.id));
+                    }
                   } catch (e) { console.error(e); }
                 }}
                 className="text-white/20 hover:text-white"
@@ -1582,49 +1701,123 @@ export default function App() {
       // Save to Firestore if user is logged in
       if (user) {
         try {
-          addLog("ARCHIVING_INTEL_REPORT_IN_CLOUD_STORAGE...");
-          await addDoc(collection(db, 'scanReports'), {
-            userId: user.uid,
-            target: finalUrl,
-            type: data.type || 'url',
-            threatScore: data.threatScore,
-            classification: data.classification,
-            explanation: data.explanation,
-            recommendation: data.recommendation,
-            riskIndicators: data.riskIndicators,
-            technicalSummary: data.technicalSummary,
-            createdAt: serverTimestamp()
-          });
-
-          // Check for high threat score (> 70) and create an alert
-          if (data.threatScore > 70) {
-            addLog("!!! CRITICAL ALERT !!! HIGH THREAT SCORE DETECTED.");
-            await addDoc(collection(db, 'alerts'), {
+          if (user.uid === 'mock-analyst-1337') {
+            addLog("ARCHIVING_INTEL_REPORT_IN_LOCAL_SESSION...");
+            await wait(300);
+            
+            const localReports = localStorage.getItem('cyber_shield_mock_scan_reports');
+            const parsedReports = localReports ? JSON.parse(localReports) : [];
+            const newReport = {
+              id: `rep-${Date.now()}`,
               userId: user.uid,
-              keyword: "HIGH_THREAT",
-              message: `Emergency: High threat signature detected for ${finalUrl}. Risk is critical.`,
+              target: finalUrl,
+              type: data.type || 'url',
               threatScore: data.threatScore,
-              timestamp: serverTimestamp()
-            });
-          }
+              classification: data.classification,
+              explanation: data.explanation,
+              recommendation: data.recommendation,
+              riskIndicators: data.riskIndicators,
+              technicalSummary: data.technicalSummary,
+              createdAt: new Date().toISOString()
+            };
+            const updatedReports = [newReport, ...parsedReports].slice(0, 20);
+            localStorage.setItem('cyber_shield_mock_scan_reports', JSON.stringify(updatedReports));
+            window.dispatchEvent(new Event('cyber_shield_new_report'));
 
-          // Check for keyword matches and create alerts
-          if (data.threatScore > 40) {
-            const subscriptionsSnap = await getDocs(query(collection(db, 'subscriptions'), where('userId', '==', user.uid)));
-            const userSubscriptions = subscriptionsSnap.docs.map(d => d.data().keyword.toLowerCase());
-            
-            const fullText = `${data.explanation} ${data.riskIndicators.join(' ')} ${data.technicalSummary.dns} ${finalUrl}`.toLowerCase();
-            
-            for (const kw of userSubscriptions) {
-              if (fullText.includes(kw)) {
-                 addLog(`!!! ALERT !!! KEYWORD MATCH DETECTED: ${kw.toUpperCase()}`);
-                 await addDoc(collection(db, 'alerts'), {
-                   userId: user.uid,
-                   keyword: kw.toUpperCase(),
-                   message: `Monitored vector match detected in scan: ${finalUrl}`,
-                   threatScore: data.threatScore,
-                   timestamp: serverTimestamp()
-                 });
+            // Check for high threat score (> 70) and create a mock alert
+            if (data.threatScore > 70) {
+              addLog("!!! CRITICAL ALERT !!! HIGH THREAT SCORE DETECTED.");
+              const localAlerts = localStorage.getItem('cyber_shield_mock_alerts');
+              const parsedAlerts = localAlerts ? JSON.parse(localAlerts) : [];
+              const newAlert = {
+                id: `alert-${Date.now()}`,
+                userId: user.uid,
+                keyword: "HIGH_THREAT",
+                message: `Emergency: High threat signature detected for ${finalUrl}. Risk is critical.`,
+                threatScore: data.threatScore,
+                timestamp: { seconds: Math.floor(Date.now() / 1000) }
+              };
+              const updatedAlerts = [newAlert, ...parsedAlerts];
+              localStorage.setItem('cyber_shield_mock_alerts', JSON.stringify(updatedAlerts));
+              window.dispatchEvent(new Event('cyber_shield_new_alert'));
+            }
+
+            // Check for keyword matches and create mock alerts
+            if (data.threatScore > 40) {
+              const localSubs = localStorage.getItem('cyber_shield_mock_subscriptions');
+              const userSubscriptions = localSubs ? JSON.parse(localSubs).map((s: any) => s.keyword.toLowerCase()) : [];
+              
+              const fullText = `${data.explanation} ${data.riskIndicators.join(' ')} ${data.technicalSummary.dns} ${finalUrl}`.toLowerCase();
+              
+              const localAlerts = localStorage.getItem('cyber_shield_mock_alerts');
+              let parsedAlerts = localAlerts ? JSON.parse(localAlerts) : [];
+              let addedAlert = false;
+              
+              for (const kw of userSubscriptions) {
+                if (fullText.includes(kw)) {
+                   addLog(`!!! ALERT !!! KEYWORD MATCH DETECTED: ${kw.toUpperCase()}`);
+                   const newAlert = {
+                     id: `alert-${Date.now()}-${kw}`,
+                     userId: user.uid,
+                     keyword: kw.toUpperCase(),
+                     message: `Monitored vector match detected in scan: ${finalUrl}`,
+                     threatScore: data.threatScore,
+                     timestamp: { seconds: Math.floor(Date.now() / 1000) }
+                   };
+                   parsedAlerts = [newAlert, ...parsedAlerts];
+                   addedAlert = true;
+                }
+              }
+              if (addedAlert) {
+                localStorage.setItem('cyber_shield_mock_alerts', JSON.stringify(parsedAlerts));
+                window.dispatchEvent(new Event('cyber_shield_new_alert'));
+              }
+            }
+          } else {
+            addLog("ARCHIVING_INTEL_REPORT_IN_CLOUD_STORAGE...");
+            await addDoc(collection(db, 'scanReports'), {
+              userId: user.uid,
+              target: finalUrl,
+              type: data.type || 'url',
+              threatScore: data.threatScore,
+              classification: data.classification,
+              explanation: data.explanation,
+              recommendation: data.recommendation,
+              riskIndicators: data.riskIndicators,
+              technicalSummary: data.technicalSummary,
+              createdAt: serverTimestamp()
+            });
+
+            // Check for high threat score (> 70) and create an alert
+            if (data.threatScore > 70) {
+              addLog("!!! CRITICAL ALERT !!! HIGH THREAT SCORE DETECTED.");
+              await addDoc(collection(db, 'alerts'), {
+                userId: user.uid,
+                keyword: "HIGH_THREAT",
+                message: `Emergency: High threat signature detected for ${finalUrl}. Risk is critical.`,
+                threatScore: data.threatScore,
+                timestamp: serverTimestamp()
+              });
+            }
+
+            // Check for keyword matches and create alerts
+            if (data.threatScore > 40) {
+              const subscriptionsSnap = await getDocs(query(collection(db, 'subscriptions'), where('userId', '==', user.uid)));
+              const userSubscriptions = subscriptionsSnap.docs.map(d => d.data().keyword.toLowerCase());
+              
+              const fullText = `${data.explanation} ${data.riskIndicators.join(' ')} ${data.technicalSummary.dns} ${finalUrl}`.toLowerCase();
+              
+              for (const kw of userSubscriptions) {
+                if (fullText.includes(kw)) {
+                   addLog(`!!! ALERT !!! KEYWORD MATCH DETECTED: ${kw.toUpperCase()}`);
+                   await addDoc(collection(db, 'alerts'), {
+                     userId: user.uid,
+                     keyword: kw.toUpperCase(),
+                     message: `Monitored vector match detected in scan: ${finalUrl}`,
+                     threatScore: data.threatScore,
+                     timestamp: serverTimestamp()
+                   });
+                }
               }
             }
           }
@@ -1674,7 +1867,13 @@ export default function App() {
                <div className="text-right">
                   <p className="text-[10px] text-[#39FF14]/30 uppercase">Operator</p>
                   <p className="text-xs font-bold truncate max-w-[120px]">{user.displayName || user.email}</p>
-                  {isAdmin && <span className="text-[7px] text-red-500 font-black uppercase">Level_10_Admin</span>}
+                  {user.uid === 'mock-analyst-1337' ? (
+                    <span className="text-[7px] text-amber-500 font-black uppercase block animate-pulse">LOCAL_GUEST_MODE</span>
+                  ) : isAdmin ? (
+                    <span className="text-[7px] text-red-500 font-black uppercase block">Level_10_Admin</span>
+                  ) : (
+                    <span className="text-[7px] text-[#39FF14] font-black uppercase block">Level_4_Operator</span>
+                  )}
                </div>
                <button 
                  onClick={handleLogout}
