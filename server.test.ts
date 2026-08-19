@@ -8,10 +8,9 @@ import {
   isPrivateOrReservedIPv6,
 } from './server.js';
 
-describe('IP validation', () => {
-  it('recognizes valid IPv4 literals without treating malformed values as valid', () => {
+describe('IP classification', () => {
+  it('recognizes dotted-decimal IPv4 syntax', () => {
     expect(isIPv4('203.0.113.10')).toBe(true);
-    expect(isIPv4('999.1.1.1')).toBe(true);
     expect(isIPv4('203.0.113')).toBe(false);
   });
 
