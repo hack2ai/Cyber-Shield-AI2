@@ -1,13 +1,16 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   base: './',
-  plugins: [react(), tailwindcss()],
+  plugins: [tailwindcss()],
   build: {
     outDir: 'docs',
-    emptyOutDir: true
+    emptyOutDir: true,
+    // The upgraded Vite/esbuild toolchain should preserve modern syntax in
+    // dependencies (Lucide, Motion, Firebase) instead of targeting legacy
+    // browser matrices that cannot be transformed reliably by current esbuild.
+    target: 'es2022'
   },
   server: {
     port: 3000,

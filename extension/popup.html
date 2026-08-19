@@ -1,54 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cyber Shield AI browser investigation companion">
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="logo">Cyber Shield AI</div>
-            <div class="status-dot"></div>
+            <div>
+                <div class="logo">Cyber Shield AI</div>
+                <div class="subhead">BROWSER INVESTIGATION COMPANION</div>
+            </div>
+            <div class="status-dot" title="Extension ready"></div>
         </header>
 
         <main id="main-view">
-            <div class="url-badge" id="current-url">Detecting tab...</div>
-            
-            <button id="scan-btn" class="primary-btn">
-                <span class="btn-text">INITIATE_SCAN</span>
+            <div class="section-title">Current indicator</div>
+            <div class="url-badge" id="current-url">Detecting active tab...</div>
+
+            <div class="quick-meta">
+                <span id="target-type">Target: —</span>
+                <span id="engine-state">Engine: ready</span>
+            </div>
+
+            <button id="scan-btn" class="primary-btn" type="button">
+                <span class="btn-text">Analyze current page</span>
                 <div class="scan-loader hidden"></div>
             </button>
 
-            <div id="results-panel" class="hidden">
+            <div id="error-banner" class="error-banner hidden"></div>
+
+            <div id="results-panel" class="results-panel hidden">
+                <div class="results-header">
+                    <span class="section-title">Threat assessment</span>
+                    <span id="confidence" class="confidence-badge">—</span>
+                </div>
+
                 <div class="score-container">
                     <div id="risk-score" class="score">--</div>
-                    <div class="score-label">THREAT_LEVEL</div>
+                    <div class="score-label">RISK SCORE / 100</div>
                 </div>
-                
+
                 <div id="verdict" class="verdict">ANALYZING...</div>
-                
+
                 <div class="details">
-                    <div class="detail-item">
-                        <span class="label">TLD_REPU:</span>
-                        <span id="tld-status" class="value">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">SSL_AUTH:</span>
-                        <span id="ssl-status" class="value">--</span>
-                    </div>
+                    <div class="detail-item"><span class="label">Classification</span><span id="classification-status" class="value">—</span></div>
+                    <div class="detail-item"><span class="label">TLD reputation</span><span id="tld-status" class="value">—</span></div>
+                    <div class="detail-item"><span class="label">TLS posture</span><span id="ssl-status" class="value">—</span></div>
+                    <div class="detail-item"><span class="label">Risk signals</span><span id="indicator-count" class="value">—</span></div>
+                </div>
+
+                <div id="recommendation" class="recommendation"></div>
+
+                <div class="result-actions">
+                    <button id="open-soc" class="secondary-btn" type="button">Open full SOC</button>
+                    <button id="copy-target" class="secondary-btn" type="button">Copy indicator</button>
                 </div>
             </div>
         </main>
 
         <div id="settings-view" class="hidden">
-            <label>API_GATEWAY_URL</label>
-            <input type="text" id="api-url" placeholder="https://your-phishintel-url.run.app">
-            <button id="save-settings" class="secondary-btn">SAVE_CONFIG</button>
+            <div class="section-title">Extension configuration</div>
+            <label for="api-url">API gateway URL</label>
+            <input type="url" id="api-url" placeholder="https://your-cyber-shield.example.com">
+            <p class="settings-help">Use the deployed Cyber Shield AI origin. The extension calls only <code>/api/analyze</code>.</p>
+            <button id="save-settings" class="secondary-btn" type="button">Save configuration</button>
         </div>
 
         <footer>
-            <button id="toggle-settings">CONFIG</button>
-            <span id="version">V1.0.0</span>
+            <button id="toggle-settings" type="button">Configuration</button>
+            <span id="version">V2.0</span>
         </footer>
     </div>
     <script src="popup.js"></script>
