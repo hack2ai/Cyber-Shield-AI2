@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Activity, ArrowLeft, History, Layers3, Shield, Terminal } from 'lucide-react';
-import { motion } from 'motion/react';
 import LegacyApp from './App';
 import { InvestigationWorkspace } from './components/InvestigationWorkspace';
+import { InvestigationHistory, saveInvestigation } from './components/InvestigationHistory';
 import { ThreatOverview, type ThreatOverviewResult } from './components/ThreatOverview';
 
 function localFallback(target: string): ThreatOverviewResult {
@@ -33,7 +33,7 @@ function localFallback(target: string): ThreatOverviewResult {
       ssl: 'Server TLS evidence unavailable in fallback mode.',
       threatIntel: 'Client-side heuristic engine active.',
     },
-    raw: { dns: { ips: [], reputation: [] }, ssl: {}, },
+    raw: { dns: { ips: [], reputation: [] }, ssl: {} },
   };
 }
 
@@ -68,10 +68,13 @@ export default function ModernApp() {
       }
       const data = await response.json() as ThreatOverviewResult;
       setResult(data);
+      saveInvestigation(data);
       setLastScannedAt(new Date());
     } catch (caught) {
       console.warn('Modern workspace fallback activated:', caught);
-      setResult(localFallback(value));
+      const fallback = localFallback(value);
+      setResult(fallback);
+      saveInvestigation(fallback);
       setLastScannedAt(new Date());
       setError('Live intelligence service unavailable. Showing deterministic fallback evidence.');
     } finally {
@@ -115,20 +118,24 @@ export default function ModernApp() {
           <div className="glass-panel flex items-center gap-3 p-3"><History size={16} className="text-amber-300" /><div><p className="section-label">Last investigation</p><p className="text-xs font-semibold text-slate-200">{lastScannedAt ? lastScannedAt.toLocaleTimeString() : 'No scan yet'}</p></div></div>
         </div>
 
-        <div className="space-y-5">
-          <InvestigationWorkspace value={target} onChange={setTarget} onAnalyze={analyze} isAnalyzing={isAnalyzing} error={error} />
-
-          {result ? (
-            <ThreatOverview result={result} />
-          ) : (
-            <section className="glass-panel min-h-[360px] border-dashed border-white/[0.10] p-8">
-              <div className="flex h-full min-h-[300px] flex-col items-center justify-center text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-400/15 bg-sky-400/[0.05] text-sky-300"><Shield size={24} /></div>
-                <h2 className="mt-5 text-xl font-semibold text-slate-200">Ready for investigation</h2>
-                <p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">Enter an indicator above to build an evidence-backed threat assessment. Results will appear here as a focused analyst view.</p>
-              </div>
-            </section>
-          )}
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr),340px]">
+          <div className="space-y-5">
+            <InvestigationWorkspace value={target} onChange={setTarget} onAnalyze={analyze} isAnalyzing={isAnalyzing} error={error} />
+            {result ? (
+              <ThreatOverview result={result} />
+            ) : (
+              <section className="glass-panel min-h-[360px] border-dashed border-white/[0.10] p-8">
+                <div className="flex h-full min-h-[300px] flex-col items-center justify-center text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-400/15 bg-sky-400/[0.05] text-sky-300"><Shield size={24} /></div>
+                  <h2 className="mt-5 text-xl font-semibold text-slate-200">Ready for investigation</h2>
+                  <p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">Enter an indicator above to build an evidence-backed threat assessment. Results will appear here as a focused analyst view.</p>
+                </div>
+              </section>
+            )}
+          </div>
+          <aside>
+            <InvestigationHistory onSelect={(previous) => { setResult(previous); setTarget(previous.target || ''); setError(null); setLastScannedAt(new Date(previous.target ? Date.now() : Date.now())); }} />
+          </aside>
         </div>
       </div>
     </div>
