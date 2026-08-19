@@ -166,6 +166,22 @@ export async function getSafeAddresses(hostname: string) {
   return assertSafeResolvedAddresses([...ipv4Addresses, ...ipv6Addresses]);
 }
 
+export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message = 'Operation timed out') {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 async function getSSLInfo(hostname: string, safeAddress?: string) {
   return new Promise((resolve) => {
     let resolved = false;
@@ -321,7 +337,7 @@ async function startServer() {
       let whoisInfo: any = null;
       if (!['ip', 'phone', 'message'].includes(type) && hostname !== 'N/A') {
         sslInfo = await getSSLInfo(hostname, dnsInfo.ips?.[0]);
-        try { whoisInfo = await whois(hostname); } catch { whoisInfo = null; }
+        try { whoisInfo = await withTimeout(whois(hostname), OUTBOUND_TIMEOUT_MS, 'WHOIS Timeout'); } catch { whoisInfo = null; }
       }
 
       const heuristics = {
