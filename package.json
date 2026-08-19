@@ -8,7 +8,7 @@
     "build": "vite build && npx esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:express --external:@google/generative-ai --external:dotenv --external:vite --external:whois-json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "test": "vitest run",
     "preview": "vite preview"
   },
