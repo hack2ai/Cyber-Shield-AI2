@@ -23,11 +23,14 @@ jobs:
           node-version: 24
           cache: npm
 
-      # package.json gained Vitest after the original lockfile was created.
-      # Regenerate the lockfile in CI before running the quality gate until the
-      # refreshed lockfile is committed to the repository.
+      # The repository's lockfile has historically lagged package.json changes.
+      # Rebuild the dependency tree deterministically in CI until the lockfile
+      # is refreshed and committed.
       - name: Install dependencies
         run: npm install --ignore-scripts
+
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
 
       - name: Typecheck
         run: npm run typecheck
