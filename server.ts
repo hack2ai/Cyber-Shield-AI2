@@ -22,6 +22,8 @@ const MAX_TARGET_LENGTH = 2048;
 const MAX_BODY_SIZE = '64kb';
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 30;
+const RATE_STATE_MAX = 10_000;
+const OUTBOUND_TIMEOUT_MS = 5_000;
 
 console.log('INIT: Cyber Shield AI intelligence service starting...');
 
@@ -72,7 +74,13 @@ function isIPv4(value: string) {
   return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value);
 }
 
+function isBlockedHostname(hostname: string) {
+  const normalized = hostname.trim().toLowerCase().replace(/\.$/, '');
+  return normalized === 'localhost' || normalized.endsWith('.localhost') || normalized.endsWith('.local') || normalized === 'ip6-localhost' || normalized === '0.0.0.0';
+}
+
 async function getSafeIPv4(hostname: string) {
+  if (isBlockedHostname(hostname)) throw new Error('Blocked local hostname.');
   const addresses = await dns.resolve4(hostname).catch(() => [] as string[]);
   if (addresses.length === 0) return [];
   const unsafe = addresses.find(isPrivateOrReservedIPv4);
@@ -80,15 +88,20 @@ async function getSafeIPv4(hostname: string) {
   return addresses;
 }
 
-async function getSSLInfo(hostname: string) {
+async function getSSLInfo(hostname: string, safeIPv4?: string) {
   return new Promise((resolve) => {
     let resolved = false;
-    const socket = tls.connect({
-      host: hostname,
+    const connectOptions: tls.ConnectionOptions = {
+      host: safeIPv4 || hostname,
       port: 443,
       servername: hostname,
       rejectUnauthorized: false,
-    }, () => {
+    };
+    if (safeIPv4) {
+      connectOptions.lookup = (_lookupHostname, _options, callback) => callback(null, safeIPv4, 4);
+    }
+
+    const socket = tls.connect(connectOptions, () => {
       if (resolved) return;
       resolved = true;
       const cert = socket.getPeerCertificate();
@@ -116,7 +129,7 @@ async function getSSLInfo(hostname: string) {
       resolved = true;
       resolve({ error: e.message || 'SSL Error', code: e.code });
     });
-    socket.setTimeout(5000, () => {
+    socket.setTimeout(OUTBOUND_TIMEOUT_MS, () => {
       if (resolved) return;
       resolved = true;
       socket.destroy();
@@ -161,6 +174,10 @@ function createRateLimiter() {
     const now = Date.now();
     const current = clients.get(key);
     if (!current || current.resetAt <= now) {
+      if (!current && clients.size >= RATE_STATE_MAX) {
+        const oldest = clients.keys().next().value;
+        if (oldest) clients.delete(oldest);
+      }
       clients.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
       return true;
     }
@@ -176,10 +193,18 @@ async function startServer() {
   const rateLimit = createRateLimiter();
 
   app.disable('x-powered-by');
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+    next();
+  });
   app.use(cors({
     origin: (origin, callback) => {
       if (!origin || allowAny || allowList.includes(origin)) return callback(null, true);
-      return callback(new Error('Origin not allowed'));
+      return callback(null, false);
     },
   }));
   app.use(express.json({ limit: MAX_BODY_SIZE }));
@@ -198,6 +223,7 @@ async function startServer() {
 
     const { type, hostname } = classifyTarget(target);
     if (!hostname && type !== 'message' && type !== 'phone') return res.status(400).json({ error: 'Unable to identify a valid analysis target.' });
+    if (isBlockedHostname(hostname)) return res.status(400).json({ error: 'Local hostnames cannot be analyzed by the server.' });
     if (isIPv4(hostname) && isPrivateOrReservedIPv4(hostname)) return res.status(400).json({ error: 'Private or reserved IP addresses cannot be analyzed by the server.' });
 
     console.log(`ANALYSIS_REQUEST: type=${type} targetLength=${target.length}`);
@@ -215,7 +241,7 @@ async function startServer() {
       let sslInfo: any = null;
       let whoisInfo: any = null;
       if (!['ip', 'phone', 'message'].includes(type) && hostname !== 'N/A') {
-        sslInfo = await getSSLInfo(hostname);
+        sslInfo = await getSSLInfo(hostname, dnsInfo.ips?.[0]);
         try { whoisInfo = await whois(hostname); } catch { whoisInfo = null; }
       }
 
