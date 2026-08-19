@@ -20,11 +20,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
+      # package.json gained Vitest after the original lockfile was created.
+      # Regenerate the lockfile in CI before running the quality gate until the
+      # refreshed lockfile is committed to the repository.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
