@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Info, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Shield, ShieldAlert, ShieldCheck, type LucideIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from './soc-utils';
 
@@ -12,7 +12,7 @@ const classificationStyles: Record<ThreatClassification, string> = {
   Malicious: 'border-red-400/20 bg-red-400/[0.06] text-red-300',
 };
 
-function classificationIcon(classification: ThreatClassification) {
+function classificationIcon(classification: ThreatClassification): LucideIcon {
   switch (classification) {
     case 'Safe': return CheckCircle2;
     case 'Suspicious': return Info;
@@ -29,7 +29,7 @@ export function SectionHeader({
 }: {
   eyebrow?: string;
   title: string;
-  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  icon?: LucideIcon;
   action?: React.ReactNode;
 }) {
   return (
