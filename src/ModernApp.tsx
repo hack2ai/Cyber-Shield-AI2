@@ -6,6 +6,7 @@ import { InvestigationHistory, saveInvestigation } from './components/Investigat
 import { ThreatOverview, type ThreatOverviewResult } from './components/ThreatOverview';
 import { EvidenceIntelligence } from './components/EvidenceIntelligence';
 import { InvestigationTimeline } from './components/InvestigationTimeline';
+import { normalizeRiskResult } from './lib/riskModel';
 
 function localFallback(target: string): ThreatOverviewResult {
   const lower = target.toLowerCase();
@@ -48,11 +49,11 @@ export default function ModernApp() {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload.error || `Analysis service returned ${response.status}.`);
       }
-      const data = await response.json() as ThreatOverviewResult;
+      const data = normalizeRiskResult(await response.json(), value);
       setResult(data); saveInvestigation(data); setLastScannedAt(new Date());
     } catch (caught) {
       console.warn('Modern workspace fallback activated:', caught);
-      const fallback = localFallback(value);
+      const fallback = normalizeRiskResult(localFallback(value), value);
       setResult(fallback); saveInvestigation(fallback); setLastScannedAt(new Date());
       setError('Live intelligence service unavailable. Showing deterministic fallback evidence.');
     } finally { setIsAnalyzing(false); }
@@ -79,7 +80,7 @@ export default function ModernApp() {
             <InvestigationWorkspace value={target} onChange={setTarget} onAnalyze={analyze} isAnalyzing={isAnalyzing} error={error} />
             {result ? <><ThreatOverview result={result} /><EvidenceIntelligence result={result} /><InvestigationTimeline result={result} /></> : <section className="glass-panel min-h-[360px] border-dashed border-white/[0.10] p-8"><div className="flex h-full min-h-[300px] flex-col items-center justify-center text-center"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-400/15 bg-sky-400/[0.05] text-sky-300"><Shield size={24} /></div><h2 className="mt-5 text-xl font-semibold text-slate-200">Ready for investigation</h2><p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">Enter an indicator above to build an evidence-backed threat assessment. Results will appear here as a focused analyst view.</p></div></section>}
           </div>
-          <aside><InvestigationHistory onSelect={(previous) => { setResult(previous); setTarget(previous.target || ''); setError(null); setLastScannedAt(new Date()); }} /></aside>
+          <aside><InvestigationHistory onSelect={(previous) => { const normalized = normalizeRiskResult(previous, previous.target); setResult(normalized); setTarget(normalized.target || ''); setError(null); setLastScannedAt(new Date()); }} /></aside>
         </div>
       </div>
     </div>
