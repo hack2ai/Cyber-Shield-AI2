@@ -7,6 +7,7 @@ import {
   isIPv6,
   isPrivateOrReservedIPv4,
   isPrivateOrReservedIPv6,
+  withTimeout,
 } from './server.js';
 
 describe('IP classification', () => {
@@ -44,6 +45,13 @@ describe('IP classification', () => {
       '8.8.8.8',
       '2001:4860:4860::8888',
     ]);
+  });
+});
+
+describe('reliability helpers', () => {
+  it('bounds a never-resolving outbound promise', async () => {
+    const pending = new Promise<never>(() => {});
+    await expect(withTimeout(pending, 10)).rejects.toThrow('Operation timed out');
   });
 });
 
