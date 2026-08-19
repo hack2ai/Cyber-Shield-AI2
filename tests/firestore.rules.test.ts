@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
   assertFails,
   assertSucceeds,
@@ -32,6 +32,10 @@ beforeAll(async () => {
     projectId: PROJECT_ID,
     firestore: { rules: 'firestore.rules' },
   });
+});
+
+beforeEach(async () => {
+  await testEnv.clearFirestore();
 });
 
 afterAll(async () => {
