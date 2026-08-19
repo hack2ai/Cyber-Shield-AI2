@@ -29,7 +29,7 @@ console.log('INIT: Cyber Shield AI intelligence service starting...');
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-function calculateEntropy(str: string) {
+export function calculateEntropy(str: string) {
   if (!str.length) return 0;
   const frequencies = new Map<string, number>();
   for (const char of str) frequencies.set(char, (frequencies.get(char) || 0) + 1);
@@ -41,18 +41,18 @@ function calculateEntropy(str: string) {
   return Number(entropy.toFixed(3));
 }
 
-function isSuspiciousTLD(hostname: string) {
+export function isSuspiciousTLD(hostname: string) {
   const tld = hostname.split('.').pop()?.toLowerCase();
   const highRiskTLDs = ['top', 'xyz', 'icu', 'buzz', 'tk', 'ml', 'ga', 'cf', 'gq', 'zip', 'mov', 'win', 'bid', 'click', 'accountant', 'download', 'review', 'faith', 'science', 'party', 'cricket', 'reisen', 'casa', 'monster', 'online', 'vip', 'quest', 'tokyo'];
   return highRiskTLDs.includes(tld || '');
 }
 
-function isURLShortener(hostname: string) {
+export function isURLShortener(hostname: string) {
   const shorteners = ['bit.ly', 'goo.gl', 't.co', 'tinyurl.com', 'is.gd', 'buff.ly', 'ow.ly', 'bl.ink'];
   return shorteners.includes(hostname.toLowerCase());
 }
 
-function isPrivateOrReservedIPv4(ip: string) {
+export function isPrivateOrReservedIPv4(ip: string) {
   const octets = ip.split('.').map(Number);
   if (octets.length !== 4 || octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return true;
   const [a, b] = octets;
@@ -70,11 +70,11 @@ function isPrivateOrReservedIPv4(ip: string) {
   );
 }
 
-function isIPv4(value: string) {
+export function isIPv4(value: string) {
   return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(value);
 }
 
-function isBlockedHostname(hostname: string) {
+export function isBlockedHostname(hostname: string) {
   const normalized = hostname.trim().toLowerCase().replace(/\.$/, '');
   return normalized === 'localhost' || normalized.endsWith('.localhost') || normalized.endsWith('.local') || normalized === 'ip6-localhost' || normalized === '0.0.0.0';
 }
@@ -138,7 +138,7 @@ async function getSSLInfo(hostname: string, safeIPv4?: string) {
   });
 }
 
-function classifyTarget(target: string) {
+export function classifyTarget(target: string) {
   let type: 'domain' | 'url' | 'ip' | 'email' | 'phone' | 'message' = 'domain';
   let hostname = '';
 
@@ -318,7 +318,13 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
-  console.error('FATAL: Startup failure', err);
-  process.exit(1);
-});
+const isDirectExecution = process.argv[1]
+  ? path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1])
+  : false;
+
+if (isDirectExecution) {
+  startServer().catch((err) => {
+    console.error('FATAL: Startup failure', err);
+    process.exit(1);
+  });
+}
