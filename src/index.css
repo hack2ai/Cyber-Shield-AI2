@@ -13,6 +13,7 @@
   --secondary-foreground: 210 40% 96%;
   --muted: 217 33% 15%;
   --muted-foreground: 215 20% 65%;
+  --muted-foreground-strong: 203 24% 58%;
   --accent: 190 85% 45%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 72% 51%;
@@ -39,7 +40,7 @@ body {
     radial-gradient(circle at 90% 10%, rgba(20, 184, 166, 0.06), transparent 28rem),
     linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size: auto, auto, 32px 32px, 32px 32px;
+  background-size: auto, auto, 32px 32px;
   color: #e6edf7;
   overflow-x: hidden;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -47,13 +48,36 @@ body {
 }
 
 button, input, textarea, select { font: inherit; }
+::selection { background: rgba(14, 165, 233, 0.25); color: #f8fafc; }
 
-::selection { background: rgba(14, 165, 233, 0.25); }
+/* Legacy terminal theme compatibility: keep component logic intact while
+   translating the old neon-green palette into the professional SOC palette. */
+.text-\[\#39FF14\] { color: #38bdf8 !important; }
+.text-\[\#39FF14\]\/30 { color: rgba(56,189,248,.30) !important; }
+.text-\[\#39FF14\]\/40 { color: rgba(56,189,248,.40) !important; }
+.text-\[\#39FF14\]\/50 { color: rgba(56,189,248,.50) !important; }
+.text-\[\#39FF14\]\/60 { color: rgba(56,189,248,.60) !important; }
+.text-\[\#39FF14\]\/70 { color: rgba(56,189,248,.70) !important; }
+.text-\[\#39FF14\]\/80 { color: rgba(56,189,248,.80) !important; }
+.bg-\[\#39FF14\] { background-color: #38bdf8 !important; }
+.bg-\[\#39FF14\]\/5 { background-color: rgba(56,189,248,.05) !important; }
+.bg-\[\#39FF14\]\/10 { background-color: rgba(56,189,248,.10) !important; }
+.bg-\[\#39FF14\]\/20 { background-color: rgba(56,189,248,.20) !important; }
+.border-\[\#39FF14\] { border-color: #38bdf8 !important; }
+.border-\[\#39FF14\]\/10 { border-color: rgba(56,189,248,.10) !important; }
+.border-\[\#39FF14\]\/20 { border-color: rgba(56,189,248,.20) !important; }
+.border-\[\#39FF14\]\/30 { border-color: rgba(56,189,248,.30) !important; }
+.border-\[\#39FF14\]\/40 { border-color: rgba(56,189,248,.40) !important; }
+.stroke-\[\#39FF14\] { stroke: #38bdf8 !important; }
+
+/* Remove the old CRT scanline overlay without touching application panels. */
+.z-\[100\] { z-index: 40 !important; }
 
 @layer components {
   .glass-panel {
     @apply rounded-xl border border-white/[0.08] bg-slate-950/65 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition-all duration-300;
   }
+  .glass-panel:hover { @apply border-slate-600/70; }
   .neon-border { @apply border-sky-400/25 shadow-[0_0_24px_rgba(14,165,233,0.08)]; }
   .status-badge { @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300; }
   .data-grid { @apply grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3; }
