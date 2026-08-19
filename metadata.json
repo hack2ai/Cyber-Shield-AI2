@@ -1,6 +1,12 @@
 {
   "name": "Cyber Shield AI",
-  "description": "Real-time AI-powered phishing and malicious website detection with threat scoring and technical intelligence.",
-  "requestFramePermissions": ["camera", "microphone"],
-  "majorCapabilities": []
+  "description": "AI-assisted threat intelligence and security analysis console for suspicious URLs, domains, IP addresses, emails and messages.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": [
+    "AI-assisted threat classification",
+    "DNS, TLS and WHOIS intelligence",
+    "Heuristic risk scoring",
+    "Scan history and reporting",
+    "QR and browser-extension workflows"
+  ]
 }
