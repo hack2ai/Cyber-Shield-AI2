@@ -3,23 +3,27 @@
 :root {
   --background: 222 47% 7%;
   --foreground: 210 40% 96%;
-  --card: 222 38% 10%;
+  --card: 222 42% 10%;
   --card-foreground: 210 40% 96%;
-  --popover: 222 38% 10%;
+  --popover: 222 47% 7%;
   --popover-foreground: 210 40% 96%;
-  --primary: 199 89% 48%;
+  --primary: 199 89% 55%;
   --primary-foreground: 222 47% 7%;
   --secondary: 217 33% 17%;
   --secondary-foreground: 210 40% 96%;
-  --muted: 217 25% 15%;
+  --muted: 217 33% 15%;
   --muted-foreground: 215 20% 65%;
-  --accent: 190 90% 45%;
-  --accent-foreground: 222 47% 7%;
-  --destructive: 0 84% 60%;
+  --accent: 190 85% 45%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
-  --border: 217 28% 20%;
-  --input: 217 28% 20%;
-  --ring: 199 89% 48%;
+  --border: 217 33% 20%;
+  --input: 217 33% 18%;
+  --ring: 199 89% 55%;
+}
+
+html, body, #root {
+  min-height: 100%;
 }
 
 html {
@@ -30,47 +34,34 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(14, 165, 233, 0.09), transparent 28rem),
-    radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.06), transparent 24rem),
-    #07111f;
-  color: #e5edf7;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(14, 165, 233, 0.09), transparent 32rem),
+    radial-gradient(circle at 90% 10%, rgba(20, 184, 166, 0.06), transparent 28rem),
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: auto, auto, 32px 32px, 32px 32px;
+  color: #e6edf7;
   overflow-x: hidden;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-::selection {
-  background: rgba(14, 165, 233, 0.28);
-  color: #f8fafc;
-}
+button, input, textarea, select { font: inherit; }
+
+::selection { background: rgba(14, 165, 233, 0.25); }
 
 @layer components {
   .glass-panel {
-    @apply rounded-xl border border-slate-700/70 bg-slate-900/75 p-5 shadow-xl shadow-black/10 backdrop-blur-xl transition-all duration-300;
+    @apply rounded-xl border border-white/[0.08] bg-slate-950/65 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl transition-all duration-300;
   }
+  .neon-border { @apply border-sky-400/25 shadow-[0_0_24px_rgba(14,165,233,0.08)]; }
+  .status-badge { @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300; }
+  .data-grid { @apply grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3; }
+  .interactive-hover { @apply hover:border-sky-400/20 hover:bg-white/[0.035] active:scale-[0.99]; }
+  .section-label { @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500; }
+  .metric-value { @apply text-2xl font-semibold tracking-tight text-slate-100; }
+}
 
-  .glass-panel:hover {
-    @apply border-slate-600/80;
-  }
-
-  .neon-border {
-    @apply border-sky-500/35 shadow-lg shadow-sky-950/30;
-  }
-
-  .status-badge {
-    @apply inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300;
-  }
-
-  .data-grid {
-    @apply grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3;
-  }
-
-  .interactive-hover {
-    @apply transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-500/30 hover:bg-slate-800/70 active:translate-y-0;
-  }
-
-  .section-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400;
-  }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
