@@ -4,9 +4,9 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx tsx server.ts",
+    "dev": "npx tsx --import ./runtime/gemini-timeout.mjs server.ts",
     "build": "vite build && npx esbuild server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:express --external:@google/generative-ai --external:dotenv --external:vite --external:whois-json",
-    "start": "node dist/server.js",
+    "start": "node --import ./runtime/gemini-timeout.mjs dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "test": "vitest run",
