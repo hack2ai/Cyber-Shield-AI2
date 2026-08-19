@@ -4,7 +4,9 @@ import {
   classifyTarget,
   isBlockedHostname,
   isIPv4,
+  isIPv6,
   isPrivateOrReservedIPv4,
+  isPrivateOrReservedIPv6,
   isSuspiciousTLD,
   isURLShortener,
 } from '../server';
@@ -30,6 +32,25 @@ describe('security helpers', () => {
     expect(isIPv4('999.1.1.1')).toBe(true);
   });
 
+  it('blocks private and reserved IPv6 destinations', () => {
+    for (const ip of [
+      '::',
+      '::1',
+      'fc00::1',
+      'fd12:3456:789a::1',
+      'fe80::1',
+      'ff02::1',
+      '::ffff:127.0.0.1',
+      '::ffff:192.168.1.10',
+      '2001:db8::1',
+    ]) {
+      expect(isPrivateOrReservedIPv6(ip)).toBe(true);
+    }
+
+    expect(isPrivateOrReservedIPv6('2001:4860:4860::8888')).toBe(false);
+    expect(isIPv6('2001:4860:4860::8888')).toBe(true);
+  });
+
   it('blocks localhost-style hostnames', () => {
     expect(isBlockedHostname('localhost')).toBe(true);
     expect(isBlockedHostname('foo.localhost.')).toBe(true);
@@ -39,8 +60,10 @@ describe('security helpers', () => {
 
   it('classifies common analysis targets consistently', () => {
     expect(classifyTarget('https://example.com/login')).toEqual({ type: 'url', hostname: 'example.com' });
+    expect(classifyTarget('https://[::1]/')).toEqual({ type: 'ip', hostname: '::1' });
     expect(classifyTarget('example.com')).toEqual({ type: 'domain', hostname: 'example.com' });
     expect(classifyTarget('8.8.8.8')).toEqual({ type: 'ip', hostname: '8.8.8.8' });
+    expect(classifyTarget('2001:4860:4860::8888')).toEqual({ type: 'ip', hostname: '2001:4860:4860::8888' });
     expect(classifyTarget('analyst@example.com')).toEqual({ type: 'email', hostname: 'example.com' });
     expect(classifyTarget('+1 (555) 123-4567')).toEqual({ type: 'phone', hostname: '+1 (555) 123-4567' });
     expect(classifyTarget('Urgent message asking you to open a suspicious link right now')).toEqual({ type: 'message', hostname: 'N/A' });
