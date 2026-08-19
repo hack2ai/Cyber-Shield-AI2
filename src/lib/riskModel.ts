@@ -40,7 +40,11 @@ export function normalizeRiskResult(input: any, targetFallback = 'Unknown target
   const classification = normalizeClassification(input?.classification, score);
 
   const indicators = Array.isArray(input?.riskIndicators)
-    ? input.riskIndicators.filter((item: unknown): item is string => typeof item === 'string').map(item => item.trim()).filter(Boolean).slice(0, 20)
+    ? [...new Set(input.riskIndicators
+        .filter((item: unknown): item is string => typeof item === 'string')
+        .map(item => item.trim())
+        .filter(Boolean))]
+        .slice(0, 20)
     : [];
 
   const target = cleanString(input?.target, targetFallback);
