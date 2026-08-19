@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { Activity, Globe2, Mail, MessageSquare, Phone, Search, Shield, Terminal, Zap } from 'lucide-react';
+import { Activity, Globe2, Mail, MessageSquare, Phone, Search, Shield, Terminal, Zap, type LucideIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from './soc-utils';
 
 export type InvestigationMode = 'url' | 'domain' | 'ip' | 'email' | 'phone' | 'message' | 'keyword';
 
-const modes: Array<{ id: InvestigationMode; label: string; icon: React.ComponentType<{ size?: number }>; description: string; placeholder: string }> = [
+const modes: Array<{ id: InvestigationMode; label: string; icon: LucideIcon; description: string; placeholder: string }> = [
   { id: 'url', label: 'URL', icon: Globe2, description: 'Inspect a full web address', placeholder: 'https://example.com/login' },
   { id: 'domain', label: 'DOMAIN', icon: Search, description: 'Review domain infrastructure', placeholder: 'example.com' },
   { id: 'ip', label: 'IP', icon: Terminal, description: 'Probe an IPv4 endpoint', placeholder: '203.0.113.10' },
