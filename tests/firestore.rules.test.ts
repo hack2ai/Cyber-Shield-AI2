@@ -21,9 +21,10 @@ import {
 
 const PROJECT_ID = 'demo-cyber-shield';
 
-let testEnv: RulesTestEnvironment;
+let testEnv: RulesTestEnvironment | undefined;
 
 function db(userId?: string): Firestore {
+  if (!testEnv) throw new Error('Firestore emulator test environment is not initialized');
   return userId ? testEnv.authenticatedContext(userId).firestore() : testEnv.unauthenticatedContext().firestore();
 }
 
@@ -35,11 +36,11 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await testEnv.clearFirestore();
+  await testEnv?.clearFirestore();
 });
 
 afterAll(async () => {
-  await testEnv.cleanup();
+  await testEnv?.cleanup();
 });
 
 describe('Firestore authorization rules', () => {
