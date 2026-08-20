@@ -12,6 +12,7 @@
     "test": "vitest run --exclude tests/firestore.rules.test.ts",
     "test:rules": "firebase emulators:exec --only firestore --project demo-cyber-shield \"vitest run tests/firestore.rules.test.ts\"",
     "test:extension": "node tests/extension-smoke.mjs",
+    "test:api": "node tests/api-analyze-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
