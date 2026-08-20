@@ -10,11 +10,11 @@ import {
   handleFirestoreError, 
   OperationType,
   Timestamp,
-  deleteDoc,
+  deleteDoc, 
   doc
 } from '../lib/firebase';
 import { useAuth } from './AuthProvider';
-import { Shield, ExternalLink, Calendar, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, Calendar, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ScanReport {
