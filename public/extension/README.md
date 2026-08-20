@@ -1,32 +1,22 @@
 # Cyber Shield Browser Extension
 
-This extension allows you to perform real-time phishing scans directly from your browser toolbar.
+This Manifest V3 extension provides a defensive one-click workflow for sending the active web page to Cyber Shield AI for analysis.
 
-## Installation Instructions (Developer Mode)
+## Installation
 
-1. **Download the Extension Files**:
-   Ensure you have the following files in a folder named `extension`:
-   - `manifest.json`
-   - `popup.html`
-   - `popup.js`
-   - `popup.css`
+1. Open `chrome://extensions/` (or the equivalent extensions page in Edge or Brave).
+2. Enable **Developer mode**.
+3. Choose **Load unpacked** and select the `extension` folder.
+4. Open the Cyber Shield AI extension and choose **Configuration**.
+5. Enter the HTTPS origin of your Cyber Shield API gateway.
+6. Save the configuration and return to the analysis view.
 
-2. **Open Extensions Page**:
-   In your browser (Chrome, Edge, Brave), go to `chrome://extensions/`.
+The extension requires an HTTPS API origin and rejects embedded credentials, query strings, and fragments in the configured gateway URL.
 
-3. **Enable Developer Mode**:
-   Toggle the **Developer mode** switch in the top right corner.
+## Usage
 
-4. **Load Unpacked**:
-   Click the **Load unpacked** button and select your `extension` folder.
+Open an HTTP(S) page, click the Cyber Shield AI toolbar action, and choose **Analyze current page**. The extension sends the active page URL to `POST /api/analyze` and displays the normalized threat classification, score, indicator count, TLS signal, and recommendation.
 
-5. **Configure API URL**:
-   - Click the Cyber Shield icon in your toolbar.
-   - Click **CONFIG**.
-   - Enter your Cyber Shield App URL (see your browser address bar, e.g., `https://ais-dev-...asia-east1.run.app`).
-   - Click **SAVE_CONFIG**.
+## Security
 
-## Features
-- One-click URL scanning of the active tab.
-- Distributed threat scoring.
-- Visual risk indicators.
+The extension uses Manifest V3, a restrictive extension-page CSP, and no wildcard host permission. The repository includes an extension packaging smoke test that validates both the source and published copies.
