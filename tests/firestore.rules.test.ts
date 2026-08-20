@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
   assertFails,
@@ -19,9 +18,11 @@ import {
   where,
   type Firestore,
 } from 'firebase/firestore';
+import fs from 'node:fs';
 
 const PROJECT_ID = 'demo-cyber-shield';
 let testEnv: RulesTestEnvironment | undefined;
+const rules = fs.readFileSync('firestore.rules', 'utf8');
 
 function db(userId?: string): Firestore {
   if (!testEnv) throw new Error('Firestore emulator test environment is not initialized');
@@ -31,7 +32,7 @@ function db(userId?: string): Firestore {
 beforeAll(async () => {
   testEnv = await initializeTestEnvironment({
     projectId: PROJECT_ID,
-    firestore: { rules: fs.readFileSync('firestore.rules', 'utf8') },
+    firestore: { rules },
   });
 });
 
