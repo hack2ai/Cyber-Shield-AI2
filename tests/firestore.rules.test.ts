@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
   assertFails,
@@ -30,7 +31,7 @@ function db(userId?: string): Firestore {
 beforeAll(async () => {
   testEnv = await initializeTestEnvironment({
     projectId: PROJECT_ID,
-    firestore: { rules: 'firestore.rules' },
+    firestore: { rules: fs.readFileSync('firestore.rules', 'utf8') },
   });
 });
 
