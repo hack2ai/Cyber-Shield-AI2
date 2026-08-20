@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, Info, Shield, ShieldAlert, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Shield, ShieldAlert, type LucideIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from './soc-utils';
 
