@@ -41,6 +41,19 @@ export default [
     },
   },
   {
+    files: ['src/App.tsx'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^(?:_|idx)$',
+          varsIgnorePattern: '^(?:_|Info|MousePointer2|auth)$',
+          caughtErrors: 'none',
+        },
+      ],
+    },
+  },
+  {
     files: ['eslint.config.js'],
     languageOptions: {
       globals: globals.node,
