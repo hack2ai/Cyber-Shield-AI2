@@ -45,8 +45,9 @@ The server includes:
 - 2,048-character target limit.
 - Per-client request throttling.
 - Configurable CORS allowlist through `CORS_ORIGINS`.
-- Protection against common private/reserved IPv4 SSRF targets.
+- Protection against common private/reserved IPv4 and IPv6 SSRF targets.
 - DNS result validation before server-side TLS inspection.
+- Bounded DNS, TLS, WHOIS, and Gemini outbound work.
 - Explicit prompt-injection resistance in the Gemini analysis prompt.
 - Generic failure responses that avoid leaking internal implementation details.
 
@@ -89,7 +90,16 @@ The development server starts the Express API and Vite middleware together.
 ```bash
 npm run typecheck
 npm run lint
+npm test
 npm run build
+```
+
+### Firebase rules tests
+
+The repository includes a Firestore Emulator test suite for identity isolation, role escalation, cross-user access, score bounds, immutable reports, and owner-only queries. Run it with the Firebase CLI installed:
+
+```bash
+npm run test:rules
 ```
 
 ## Production deployment
@@ -107,7 +117,7 @@ For GitHub Pages or another static host, only the client-side application is ava
 
 ## Browser extension
 
-The extension source is under [`extension/`](./extension) and the packaged static copy is published under [`public/extension/`](./public/extension). The extension can send the current page or selected content into the Cyber Shield analysis workflow.
+The extension source is under [`extension/`](./extension) and the packaged static copy is published under [`public/extension/`](./public/extension). The extension sends the current page URL into the Cyber Shield analysis workflow and requires an HTTPS API gateway.
 
 ## Project structure
 
@@ -122,6 +132,8 @@ public/extension/         Static extension assets
 docs/                     Production/static build output
 firestore.rules           Firebase authorization rules
 security_spec.md          Security requirements and abuse cases
+runtime/                  Runtime safety guards
+tests/                    Regression and security tests
 ```
 
 ## Responsible use
@@ -130,4 +142,4 @@ This project is intended for defensive security analysis, education and authoriz
 
 ## License
 
-The repository currently does not declare a project-specific license. Add an explicit license before distributing the software as an open-source package.
+Cyber Shield AI is licensed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE).
