@@ -45,8 +45,10 @@ The server includes:
 - 2,048-character target limit.
 - Per-client request throttling.
 - Configurable CORS allowlist through `CORS_ORIGINS`.
-- Protection against common private/reserved IPv4 SSRF targets.
+- Protection against private/reserved IPv4 and IPv6 SSRF targets.
 - DNS result validation before server-side TLS inspection.
+- TLS connections pinned to validated public addresses.
+- Bounded DNS, TLS, WHOIS, and Gemini outbound work.
 - Explicit prompt-injection resistance in the Gemini analysis prompt.
 - Generic failure responses that avoid leaking internal implementation details.
 
@@ -89,8 +91,22 @@ The development server starts the Express API and Vite middleware together.
 ```bash
 npm run typecheck
 npm run lint
+npm test
+npm run test:extension
 npm run build
 ```
+
+### Firebase rules tests
+
+The repository includes a Firestore Emulator suite for authorization invariants such as owner isolation, role escalation prevention, cross-user access, score bounds, immutable reports, and owner-only queries.
+
+```bash
+npm run test:rules
+```
+
+### CI security gates
+
+GitHub Actions runs dependency auditing, TypeScript validation, linting, unit tests, extension packaging validation, production builds, a production health smoke test, and CodeQL analysis.
 
 ## Production deployment
 
@@ -107,7 +123,9 @@ For GitHub Pages or another static host, only the client-side application is ava
 
 ## Browser extension
 
-The extension source is under [`extension/`](./extension) and the packaged static copy is published under [`public/extension/`](./public/extension). The extension can send the current page or selected content into the Cyber Shield analysis workflow.
+The extension source is under [`extension/`](./extension) and the packaged static copy is published under [`public/extension/`](./public/extension). It uses Manifest V3, a restrictive extension-page CSP, and no wildcard host permission. The repository includes a smoke test for both source and published copies.
+
+The extension sends the active page URL to the configured HTTPS Cyber Shield API gateway and displays the normalized analysis result.
 
 ## Project structure
 
@@ -122,6 +140,9 @@ public/extension/         Static extension assets
 docs/                     Production/static build output
 firestore.rules           Firebase authorization rules
 security_spec.md          Security requirements and abuse cases
+runtime/                  Runtime safety guards
+tests/                    Regression and security tests
+LICENSE                   Apache-2.0 license
 ```
 
 ## Responsible use
@@ -130,4 +151,4 @@ This project is intended for defensive security analysis, education and authoriz
 
 ## License
 
-The repository currently does not declare a project-specific license. Add an explicit license before distributing the software as an open-source package.
+Cyber Shield AI is licensed under the **Apache License 2.0**. See [`LICENSE`](./LICENSE).
