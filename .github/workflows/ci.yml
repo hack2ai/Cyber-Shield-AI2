@@ -81,3 +81,4 @@ jobs:
 
           test -s /tmp/cyber-shield-health.json
           grep -q '"status":"ok"' /tmp/cyber-shield-health.json
+          BASE_URL=http://127.0.0.1:4173 npm run test:api
