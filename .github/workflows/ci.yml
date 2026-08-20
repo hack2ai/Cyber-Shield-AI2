@@ -45,6 +45,9 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Extension packaging smoke test
+        run: npm run test:extension
+
       - name: Production build
         run: npm run build
 

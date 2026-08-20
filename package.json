@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "test": "vitest run",
+    "test:extension": "node tests/extension-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
