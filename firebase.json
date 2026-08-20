@@ -8,7 +8,7 @@
     }
   },
   "hosting": {
-    "public": "dist",
+    "public": "docs",
     "ignore": [
       "firebase.json",
       "**/.*",
