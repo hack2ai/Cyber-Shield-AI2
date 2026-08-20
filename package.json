@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "test": "vitest run",
+    "test:extension": "node tests/extension-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -45,7 +46,6 @@
     "postcss": "^8.5.26",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.4.5",
-    "vite": "^6.4.3",
     "vitest": "^3.2.6"
   },
   "overrides": {
