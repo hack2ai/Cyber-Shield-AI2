@@ -12,7 +12,7 @@ The deploy workflow uses that secret only during the deployment job and deletes 
 
 ## Deployment behavior
 
-Every push to `main` triggers `.github/workflows/firebase-hosting.yml`. The workflow installs dependencies, runs the production build, and deploys only Firebase Hosting for project `gen-lang-client-0121845763`.
+Every push to `main` triggers `.github/workflows/firebase-hosting.yml`. The workflow installs dependencies, runs the production build, verifies that `docs/index.html` exists, deploys only Firebase Hosting for project `gen-lang-client-0121845763`, and checks the live Hosting URL so Firebase's default 404 page cannot be mistaken for a successful deployment.
 
 The workflow also supports manual `workflow_dispatch` runs.
 
@@ -23,5 +23,5 @@ After authenticating with Firebase CLI, the equivalent local flow is:
 ```bash
 npm install --legacy-peer-deps
 npm run build
-npx firebase-tools deploy --only hosting --project gen-lang-client-0121845763
+npx firebase-tools deploy --only hosting --project gen-lang-client-0121845763 --config firebase.json
 ```
