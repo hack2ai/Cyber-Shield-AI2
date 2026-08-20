@@ -33,7 +33,9 @@ const privateV6 = await request({ url: 'fd00::1' });
 assert(privateV6.response.status === 400, `Expected private IPv6 to return 400, got ${privateV6.response.status}`);
 assert(/Private or reserved IP/i.test(privateV6.payload.error || ''), 'Unexpected private IPv6 rejection');
 
-for (let i = 0; i < 29; i += 1) {
+// Five validation requests above already consumed five rate-limit slots.
+// Send 24 more invalid requests so the next request is exactly #30.
+for (let i = 0; i < 24; i += 1) {
   const result = await request({});
   assert(result.response.status === 400, `Expected validation response during rate-limit warmup, got ${result.response.status}`);
 }
