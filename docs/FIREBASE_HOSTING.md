@@ -1,6 +1,6 @@
 # Firebase Hosting deployment
 
-The Vite frontend is deployed from `dist/`. The production server bundle is also generated into `dist/`, but Firebase Hosting is configured to exclude `server.js` from the public site.
+The Vite frontend is built into `docs/`, which is the Firebase Hosting public directory. The production server bundle is also generated as `dist/server.js` for the Node deployment/smoke-test path and is not published by Firebase Hosting.
 
 ## GitHub Actions secret
 
