@@ -1,0 +1,3 @@
+- Build output must contain `docs/index.html`.
+- Firebase Hosting must publish `docs/`.
+- The deployment job checks the live `https://gen-lang-client-0121845763.web.app/` URL and fails if Firebase's default `Page Not Found` page is returned.
