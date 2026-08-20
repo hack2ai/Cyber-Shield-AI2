@@ -36,26 +36,35 @@ jobs:
 
       - name: Verify Hosting output
         run: |
+          set -euo pipefail
           test -f docs/index.html
           test -d docs/assets
           printf 'Firebase Hosting output:\n'
           find docs -maxdepth 2 -type f | sort | head -50
+          printf '\nindex.html checksum: '
+          sha256sum docs/index.html | cut -d ' ' -f1
 
       - name: Write Firebase service account
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
+          set -euo pipefail
           test -n "$FIREBASE_SERVICE_ACCOUNT"
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
 
       - name: Deploy Hosting
-        run: npx firebase-tools deploy --only hosting --project gen-lang-client-0121845763 --config firebase.json
+        run: >-
+          npx firebase-tools deploy
+          --only hosting:gen-lang-client-0121845763
+          --project gen-lang-client-0121845763
+          --config firebase.json
 
       - name: Verify live Hosting site
         env:
           SITE_URL: https://gen-lang-client-0121845763.web.app/
         run: |
+          set -euo pipefail
           curl --fail --silent --show-error --location --retry 5 --retry-delay 3 "$SITE_URL" -o "$RUNNER_TEMP/site.html"
           ! grep -q "Page Not Found" "$RUNNER_TEMP/site.html"
           grep -q "<!doctype html\|<html" "$RUNNER_TEMP/site.html"
