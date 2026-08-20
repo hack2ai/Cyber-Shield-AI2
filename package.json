@@ -9,7 +9,7 @@
     "start": "node --import ./runtime/gemini-timeout.mjs dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
-    "test": "vitest run",
+    "test": "vitest run --exclude tests/firestore.rules.test.ts",
     "test:rules": "firebase emulators:exec --only firestore --project demo-cyber-shield \"vitest run tests/firestore.rules.test.ts\"",
     "preview": "vite preview"
   },
