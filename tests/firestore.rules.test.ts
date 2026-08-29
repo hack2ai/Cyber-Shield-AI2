@@ -90,13 +90,20 @@ describe('Firestore authorization rules', () => {
     await assertFails(getDoc(doc(db('bob'), 'scanReports/report-1')));
   });
 
-  it('enforces report score bounds and immutability', async () => {
+  it('rejects invalid scan classifications and enforces report score bounds and immutability', async () => {
     const userDb = db('alice');
-    await assertFails(setDoc(doc(userDb, 'scanReports/report-invalid'), {
+    await assertFails(setDoc(doc(userDb, 'scanReports/report-invalid-score'), {
       userId: 'alice',
       target: 'example.com',
       classification: 'Suspicious',
       threatScore: 101,
+      createdAt: serverTimestamp(),
+    }));
+    await assertFails(setDoc(doc(userDb, 'scanReports/report-invalid-classification'), {
+      userId: 'alice',
+      target: 'example.com',
+      classification: 'DefinitelySafe',
+      threatScore: 10,
       createdAt: serverTimestamp(),
     }));
     const reportRef = doc(userDb, 'scanReports/report-valid');
