@@ -32,17 +32,18 @@ This document records repository-level and CI evidence observed during the profe
 
 ## Automated verification evidence
 
-The GitHub Actions activity observed during this review shows successful runs on `main` for the latest extension synchronization commit `e28db22`:
+Observed GitHub Actions results for the latest application changes include successful CI, CodeQL analysis, Firebase Hosting deployment, and Pages deployment activity on `main`.
+
+For the latest extension synchronization commit `e28db22`, the observed runs include:
 
 ```text
 CI #261       fix: sync published extension API permissions      ✅
 CodeQL #159   fix: sync published extension API permissions      ✅
 Firebase Hosting #15   fix: sync published extension API permissions ✅
+pages build and deployment #73                              ✅
 ```
 
-The Firebase Hosting run also completed its frontend build, hosting-output verification, deployment, live-site verification, and service-account cleanup steps successfully.
-
-The CodeQL JavaScript/TypeScript analysis job completed successfully.
+The Firebase Hosting verification completed the frontend build, hosting-output verification, deployment, live-site verification, and service-account cleanup steps successfully. The CodeQL JavaScript/TypeScript analysis job completed successfully.
 
 ## Regression coverage
 
@@ -55,6 +56,6 @@ The repository includes automated tests for:
 
 ## Release readiness
 
-The repository is suitable for a professional portfolio/release workflow after the latest successful CI run is retained as evidence and the application is manually exercised in the intended deployment environment.
+The repository is prepared for the `v2.0.0` professional release/tag after the verified CI and deployment checks recorded above.
 
 Do not claim a formal security certification, penetration test, or exhaustive runtime verification from this document alone.
