@@ -2,7 +2,7 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // 0. Global Safety Net
     match /{document=**} {
       allow read, write: if false;
@@ -43,8 +43,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isOwner(userId) && 
-                      incoming().role == existing().role && // Prevent self-promotion
+      allow update: if isOwner(userId) &&
+                      incoming().role == existing().role &&
                       incoming().createdAt == existing().createdAt &&
                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email']);
     }
@@ -54,7 +54,7 @@ service cloud.firestore {
       return data.keys().hasAll(['userId', 'target', 'classification', 'createdAt']) &&
              data.userId == request.auth.uid &&
              data.target is string && data.target.size() <= 2048 &&
-             data.classification is string &&
+             data.classification in ['Safe', 'Suspicious', 'Phishing', 'Malicious'] &&
              data.createdAt == request.time &&
              (!('threatScore' in data) || (data.threatScore >= 0 && data.threatScore <= 100));
     }
