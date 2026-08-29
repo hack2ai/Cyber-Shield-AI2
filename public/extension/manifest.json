@@ -8,6 +8,9 @@
     "storage",
     "tabs"
   ],
+  "host_permissions": [
+    "https://*/*"
+  ],
   "action": {
     "default_title": "Analyze current page with Cyber Shield AI",
     "default_popup": "popup.html"
